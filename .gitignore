@@ -23,6 +23,7 @@ MDK-ARM/Objects/
 *.uvgui.*
 *.bak
 *.uvoptx
+*.uvprojx
 
 # ===== 日志 / 锁文件 =====
 *.log

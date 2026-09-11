@@ -29,6 +29,7 @@
 #include "led.h"
 #include "key.h"
 #include "beep.h"
+#include "oled.h"
 
 /* USER CODE END Includes */
 
@@ -72,14 +73,23 @@ const osThreadAttr_t BeepTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+
+osThreadId_t OledTaskHandle;
+const osThreadAttr_t OledTask_attributes = {
+  .name = "OledTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
+
 void LedTask(void *argument);
 void BeepTask(void *argument);
+void OledTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -120,6 +130,7 @@ void MX_FREERTOS_Init(void) {
 
   LedTaskHandle = osThreadNew(LedTask,NULL,&LedTask_attributes);
   BeepTaskHandle = osThreadNew(BeepTask,NULL,&BeepTask_attributes);
+  OledTaskHandle = osThreadNew(OledTask,NULL,&OledTask_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
@@ -168,6 +179,37 @@ void BeepTask(void *argument)
     beep_ctr();
   }
   /* USER CODE END StartDefaultTask */
+}
+
+void OledTask(void *argument)
+{
+    OLED_HAL_Init();
+    
+    for(;;)
+    {
+		OLED_HAL_Fill(0xFF); //全屏点亮
+		osDelay(2000);
+		OLED_HAL_Fill(0x00); //全屏熄灭
+		osDelay(2000);
+
+		osDelay(2000);
+		//测试6*8字符
+		OLED_HAL_ShowStr(0, 3, "Helle world", 1);
+		//测试8*16字符
+		OLED_HAL_ShowStr(0, 4, "Hello tech", 2);
+		osDelay(2000);
+
+		//清屏
+		OLED_HAL_CLS();
+		//测试OLED休眠
+		OLED_HAL_OFF();
+		osDelay(2000);
+		//测试OLED休眠之后唤醒
+		OLED_HAL_ON();
+		//测试BMP位图显示
+		OLED_HAL_DrawBMP(0, 0, 127, 7, BMP1);
+		osDelay(2000);
+    }
 }
 /* USER CODE END Application */
 
