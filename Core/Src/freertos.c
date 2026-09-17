@@ -26,10 +26,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "led.h"
-#include "key.h"
-#include "beep.h"
 #include "oled.h"
+#include "HC05.h"
+#include "GY39.h"
+
 
 /* USER CODE END Includes */
 
@@ -51,6 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
+
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -60,24 +61,17 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 
-osThreadId_t LedTaskHandle;
-const osThreadAttr_t LedTask_attributes = {
-  .name = "LedTask",
-  .stack_size = 128 * 4,
+osThreadId_t oledTaskHandle;
+const osThreadAttr_t oledTask_attributes = {
+  .name = "oledTask",
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 
-osThreadId_t BeepTaskHandle;
-const osThreadAttr_t BeepTask_attributes = {
-  .name = "BeepTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-
-osThreadId_t OledTaskHandle;
-const osThreadAttr_t OledTask_attributes = {
-  .name = "OledTask",
-  .stack_size = 128 * 4,
+osThreadId_t uartTaskHandle;
+const osThreadAttr_t uartTask_attributes = {
+  .name = "uartTask",
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Private function prototypes -----------------------------------------------*/
@@ -86,10 +80,8 @@ const osThreadAttr_t OledTask_attributes = {
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
-
-void LedTask(void *argument);
-void BeepTask(void *argument);
 void OledTask(void *argument);
+void UartTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -105,6 +97,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
+	
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -121,16 +114,13 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
+    oledTaskHandle = osThreadNew(OledTask, NULL, &oledTask_attributes);
+    uartTaskHandle = osThreadNew(UartTask, NULL, &uartTask_attributes);
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
-
-  LedTaskHandle = osThreadNew(LedTask,NULL,&LedTask_attributes);
-  BeepTaskHandle = osThreadNew(BeepTask,NULL,&BeepTask_attributes);
-  OledTaskHandle = osThreadNew(OledTask,NULL,&OledTask_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
@@ -159,57 +149,52 @@ void StartDefaultTask(void *argument)
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 
-void LedTask(void *argument)
-{
-  /* USER CODE BEGIN StartDefaultTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    led_ctr();
-  }
-  /* USER CODE END StartDefaultTask */
-}
-
-void BeepTask(void *argument)
-{
-  /* USER CODE BEGIN StartDefaultTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    beep_ctr();
-  }
-  /* USER CODE END StartDefaultTask */
-}
-
 void OledTask(void *argument)
 {
+    uint8_t page = 0;
+    
     OLED_HAL_Init();
+    
+    osDelay(2500);
     
     for(;;)
     {
-		OLED_HAL_Fill(0xFF); //全屏点亮
-		osDelay(2000);
-		OLED_HAL_Fill(0x00); //全屏熄灭
-		osDelay(2000);
-
-		osDelay(2000);
-		//测试6*8字符
-		OLED_HAL_ShowStr(0, 3, "Helle world", 1);
-		//测试8*16字符
-		OLED_HAL_ShowStr(0, 4, "Hello tech", 2);
-		osDelay(2000);
-
-		//清屏
-		OLED_HAL_CLS();
-		//测试OLED休眠
-		OLED_HAL_OFF();
-		osDelay(2000);
-		//测试OLED休眠之后唤醒
-		OLED_HAL_ON();
-		//测试BMP位图显示
-		OLED_HAL_DrawBMP(0, 0, 127, 7, BMP1);
-		osDelay(2000);
+        OLED_HAL_CLS();
+        
+        if(page == 0)
+        {
+            OLED_HAL_ShowGY39Data(GY39Data.Temp, GY39Data.Hum, GY39Data.P, GY39Data.Alt, GY39Data.Lux);
+        }
+        else
+        {
+            OLED_HAL_ShowGY39Data2(GY39Data.Hum, GY39Data.P, GY39Data.Lux);
+        }
+        
+        page = !page;
+        osDelay(2000);
     }
 }
-/* USER CODE END Application */
 
+void UartTask(void *argument)
+{
+    uint8_t msg_buf[100];
+    uint8_t msg_len = 0;
+    
+    osDelay(2000);
+    
+    for(;;)
+    {
+        GY39_ReadData();
+        
+        HC05_BuildMessage(msg_buf, &msg_len, GY39Data.Temp, GY39Data.Hum, GY39Data.P, GY39Data.Alt, GY39Data.Lux);
+        
+        HAL_UART_Transmit(&huart1, msg_buf, msg_len, 100);
+        HC05_SendGY39Data(GY39Data.Temp, GY39Data.Hum, GY39Data.P, GY39Data.Alt, GY39Data.Lux);
+        
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+
+
+/* USER CODE END Application */

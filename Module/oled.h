@@ -50,4 +50,10 @@ void OLED_HAL_ShowCN(unsigned char x, unsigned char y, unsigned char N);
 // OLED绘制位图函数
 void OLED_HAL_DrawBMP(unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1, unsigned char BMP[]);
 
+// OLED显示GY39传感器数据（第一页：GY39、温度、海拔）
+void OLED_HAL_ShowGY39Data(uint16_t temp, uint16_t hum, uint32_t p, uint16_t alt, uint32_t lux);
+
+// OLED显示GY39传感器数据（第二页：湿度、气压、光照度）
+void OLED_HAL_ShowGY39Data2(uint16_t hum, uint32_t p, uint32_t lux);
+
 #endif

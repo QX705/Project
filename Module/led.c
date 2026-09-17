@@ -10,10 +10,10 @@ void led_ctr(void)
     {
         // 关闭LED
         HAL_GPIO_WritePin(LED_GPIO_PORT, LED1_GPIO_PIN | LED2_GPIO_PIN | LED3_GPIO_PIN | LED4_GPIO_PIN, GPIO_PIN_RESET);
-        HAL_Delay(100);
+        osDelay(100);
 
         // 点亮LED
         HAL_GPIO_WritePin(LED_GPIO_PORT, led_pin[i], GPIO_PIN_SET);
-        HAL_Delay(100);
+        osDelay(100);
     }
 }

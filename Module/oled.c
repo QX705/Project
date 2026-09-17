@@ -209,3 +209,85 @@ void OLED_HAL_DrawBMP(unsigned char x0, unsigned char y0, unsigned char x1, unsi
         }
     }
 }
+
+/*
+    功能: 显示GY39传感器数据（第一页）
+    参数: temp -- 温度(0.1度单位), alt -- 高度(m)
+    显示: GY39、温度、海拔
+*/
+void OLED_HAL_ShowGY39Data(uint16_t temp, uint16_t hum, uint32_t p, uint16_t alt, uint32_t lux)
+{
+    unsigned char temp_str[20];
+    unsigned char alt_str[20];
+    uint8_t num_chars[] = "0123456789";
+    
+    temp_str[0] = 'T'; temp_str[1] = ':'; temp_str[2] = ' ';
+    temp_str[3] = num_chars[(temp / 1000) % 10];
+    temp_str[4] = num_chars[(temp / 100) % 10];
+    temp_str[5] = '.';
+    temp_str[6] = num_chars[(temp / 10) % 10];
+    temp_str[7] = num_chars[temp % 10];
+	temp_str[8] = ' ';
+    temp_str[9] = 'C'; temp_str[10] = '\0';
+    
+    alt_str[0] = 'A'; alt_str[1] = ':'; alt_str[2] = ' ';
+    alt_str[3] = num_chars[(alt / 100) % 10];
+    alt_str[4] = '.';
+    alt_str[5] = num_chars[(alt / 10) % 10];
+    alt_str[6] = num_chars[alt % 10];
+	alt_str[7] = ' ';
+    alt_str[8] = 'm'; alt_str[9] = '\0';
+    
+    OLED_HAL_ShowStr(0, 1, "GY39:", 2);
+    OLED_HAL_ShowStr(0, 3, temp_str, 2);
+    OLED_HAL_ShowStr(0, 5, alt_str, 2);
+}
+
+/*
+    功能: 显示GY39传感器数据（第二页）
+    参数: hum -- 湿度(0.1%单位), p -- 气压(Pa), lux -- 光照度(lux)
+    显示: 湿度、气压、光照度
+*/
+void OLED_HAL_ShowGY39Data2(uint16_t hum, uint32_t p, uint32_t lux)
+{
+    unsigned char hum_str[20];
+    unsigned char p_str[20];
+    unsigned char lux_str[20];
+    uint8_t num_chars[] = "0123456789";
+    
+    hum_str[0] = 'H'; hum_str[1] = ':'; hum_str[2] = ' ';
+    hum_str[3] = num_chars[(hum / 1000) % 10];
+    hum_str[4] = num_chars[(hum / 100) % 10];
+    hum_str[5] = '.';
+    hum_str[6] = num_chars[(hum / 10) % 10];
+    hum_str[7] = num_chars[hum % 10];
+	hum_str[8] = ' ';
+    hum_str[9] = '%'; hum_str[10] = '\0';
+    
+    p_str[0] = 'P'; p_str[1] = ':'; p_str[2] = ' ';
+    p_str[3] = num_chars[(p / 10000000) % 10];
+    p_str[4] = num_chars[(p / 1000000) % 10];
+    p_str[5] = num_chars[(p / 100000) % 10];
+    p_str[6] = num_chars[(p / 10000) % 10];
+    p_str[7] = num_chars[(p / 1000) % 10];
+    p_str[8] = num_chars[(p / 100) % 10];
+    p_str[9] = '.';
+    p_str[10] = num_chars[(p / 10) % 10];
+    p_str[11] = num_chars[p % 10];
+	p_str[12] = ' ';
+    p_str[13] = 'P'; p_str[14] = '\0';
+    
+    lux_str[0] = 'L'; lux_str[1] = ':'; lux_str[2] = ' ';
+    lux_str[3] = num_chars[(lux / 10000) % 10];
+    lux_str[4] = num_chars[(lux / 1000) % 10];
+    lux_str[5] = num_chars[(lux / 100) % 10];
+    lux_str[6] = '.';
+    lux_str[7] = num_chars[(lux / 10) % 10];
+    lux_str[8] = num_chars[lux % 10];
+	lux_str[9] = ' ';
+    lux_str[10] = 'l'; lux_str[11] = '\0';
+    
+    OLED_HAL_ShowStr(0, 1, hum_str, 2);
+    OLED_HAL_ShowStr(0, 3, p_str, 2);
+    OLED_HAL_ShowStr(0, 5, lux_str, 2);
+}

@@ -189,5 +189,42 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE BEGIN 1 */
 
-/* USER CODE END 1 */
+void Uart_SendNumber(uint32_t num)
+{
+    char buf[12];
+    int i = 0;
+    
+    if(num == 0)
+    {
+        HAL_UART_Transmit(&huart1, (uint8_t*)"0", 1, 100);
+        return;
+    }
+    
+    while(num > 0)
+    {
+        buf[i++] = (num % 10) + '0';
+        num /= 10;
+    }
+    
+    while(i > 0)
+    {
+        HAL_UART_Transmit(&huart1, (uint8_t*)&buf[--i], 1, 100);
+    }
+}
 
+void Uart_SendFloat(uint32_t value)
+{
+    uint32_t integer_part = value / 100;
+    uint32_t decimal_part = value % 100;
+    
+    Uart_SendNumber(integer_part);
+    HAL_UART_Transmit(&huart1, (uint8_t*)".", 1, 100);
+    
+    if(decimal_part < 10)
+    {
+        HAL_UART_Transmit(&huart1, (uint8_t*)"0", 1, 100);
+    }
+    Uart_SendNumber(decimal_part);
+}
+
+/* USER CODE END 1 */

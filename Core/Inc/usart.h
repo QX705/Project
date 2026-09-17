@@ -45,11 +45,16 @@ void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+void Uart_SendNumber(uint32_t num);
+void Uart_SendFloat(uint32_t value);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __USART_H__ */
+#endif 
+
+/* __USART_H__ */
 
