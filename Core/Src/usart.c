@@ -228,3 +228,4 @@ void Uart_SendFloat(uint32_t value)
 }
 
 /* USER CODE END 1 */
+

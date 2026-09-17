@@ -54,7 +54,5 @@ void Uart_SendFloat(uint32_t value);
 }
 #endif
 
-#endif 
-
-/* __USART_H__ */
+#endif /* __USART_H__ */
 

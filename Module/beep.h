@@ -19,6 +19,6 @@ typedef enum beep_state{
 #include "stm32f1xx_hal.h"
 #include "cmsis_os.h"
 
-void beep_ctr(void);
+void beep_ctr(void); 
 
 #endif

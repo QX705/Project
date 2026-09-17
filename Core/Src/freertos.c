@@ -29,7 +29,8 @@
 #include "oled.h"
 #include "HC05.h"
 #include "GY39.h"
-
+#include "led.h"
+#include "beep.h"
 
 /* USER CODE END Includes */
 
@@ -74,13 +75,34 @@ const osThreadAttr_t uartTask_attributes = {
   .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+
+osThreadId_t ledTaskHandle;
+const osThreadAttr_t ledTask_attributes = {
+  .name = "ledTask",
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+
+osThreadId_t beepTaskHandle;
+const osThreadAttr_t beepTask_attributes = {
+  .name = "beepTask",
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+
+/* USER CODE BEGIN Variables */
+
+/* USER CODE END Variables */
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
+
 void OledTask(void *argument);
+void LedTask(void *argument);
+void BeepTask(void *argument);
 void UartTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -116,8 +138,11 @@ void MX_FREERTOS_Init(void) {
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-    oledTaskHandle = osThreadNew(OledTask, NULL, &oledTask_attributes);
-    uartTaskHandle = osThreadNew(UartTask, NULL, &uartTask_attributes);
+  oledTaskHandle = osThreadNew(OledTask, NULL, &oledTask_attributes);
+  ledTaskHandle = osThreadNew(LedTask, NULL, &ledTask_attributes);
+  beepTaskHandle = osThreadNew(BeepTask, NULL, &beepTask_attributes);
+  uartTaskHandle = osThreadNew(UartTask, NULL, &uartTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -195,6 +220,22 @@ void UartTask(void *argument)
     }
 }
 
+void BeepTask(void *argument)
+{
+    for(;;)
+    {
+        beep_ctr();
+        osDelay(100);
+    }
+}
 
-
+void LedTask(void *argument)
+{
+    for(;;)
+    {
+        led_ctr();
+        osDelay(100);
+    }
+}
 /* USER CODE END Application */
+

@@ -13,8 +13,10 @@
 #include "stm32f1xx_hal.h"
 #include <stdint.h>
 #include "cmsis_os.h"
-
+#include "GY39.h"
 
 void led_ctr(void);
+
+int led_state(void);
 
 #endif
